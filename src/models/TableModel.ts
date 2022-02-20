@@ -33,9 +33,9 @@ export default class TableModel {
     // private player_data: Table = Table();
     private trick_to_animate: number[] | undefined = undefined;
 
-    isFull(): boolean {
+    isFull(allowReconnect: boolean): boolean {
         for (let seat of this._seats) {
-            if (seat == undefined || !seat.connected) {
+            if (seat == undefined || allowReconnect && !seat.connected) {
                 return false;
             }
         }
@@ -109,7 +109,7 @@ export default class TableModel {
             return true;
         }
 
-        if (this.isFull()) {
+        if (this.isFull(false)) {
             TableModel.logger.warn("Sorry buddy, but the table is already full");
             return false;
         }
@@ -347,11 +347,8 @@ export default class TableModel {
         } else if (cards.length == 1 && cards[0] == SpecialCardRanks.get(-99)) {
             TableModel.logger.info(`Player ${userId} has played the DOGS.`);
             this.resetPlayersPassedInfo();
-            let cardModel = this.findCard(cards[0]);
-            cardModel!.is_visible = true;
-            cardModel!.setOwnerAsTable(CardState.ON_TABLE_PLAYED);
-            cardModel!.set_state(CardState.ON_TABLE_PLAYED);
-            //self.play_sound('bark')
+            this.putCardOnTable(cards[0], player);
+            // TODO self.play_sound('bark')
             // simply pretend the next player played something ...
             currentSeat = (currentSeat + 1) % 4;
         } else {
@@ -375,14 +372,7 @@ export default class TableModel {
             //room=_game_state.get_table_id() + str(p.seat_no)
 
             cards.forEach((cardName: any) => {
-                let cardModel = this.findCard(cardName);
-                if (cardModel != null) {
-                    player?.removeCard(cardModel!);
-                    cardModel!.is_visible = true;
-                    TableModel.logger.info("Playing card: %s", cardModel!.name);
-                    cardModel!.setOwnerAsTable(CardState.ON_TABLE_PLAYED);
-                    cardModel!.set_state(CardState.ON_TABLE_PLAYED);
-                }
+                this.putCardOnTable(cardName, player);
             });
         }
         this.checkIfPlayerIsDone(player!);
@@ -397,6 +387,17 @@ export default class TableModel {
             }
         }
         return nextSeat;
+    }
+
+    putCardOnTable(cardName: string, player: PlayerModel | undefined) {
+        let cardModel = this.findCard(cardName);
+        if (cardModel != null) {
+            player?.removeCard(cardModel!);
+            cardModel!.is_visible = true;
+            TableModel.logger.info("Playing card: %s", cardModel!.name);
+            cardModel!.setOwnerAsTable(CardState.ON_TABLE_PLAYED);
+            cardModel!.set_state(CardState.ON_TABLE_PLAYED);
+        }
     }
 
     finishTrick(player: PlayerModel, isEndOfGame: boolean) {

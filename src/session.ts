@@ -21,6 +21,7 @@ const connections = new Map<string, WebSocket>();
 const userIds = new Set<string>();
 
 let testUsers = [["Knut", "Darmstadt"], ["Andrea", "Bonn"], ["Bettina", "Darmstadt"]];
+// let testUsers = [["Andrea", "Bonn"], ["Bettina", "Darmstadt"]];
 
 //
 // run with tsc;node dist/server/session.js
@@ -94,7 +95,7 @@ server.on('upgrade', function (request: IncomingMessage, socket: Socket, head: B
         return;
     }
 
-    if (table.isFull()) {
+    if (table.isFull(true)) {
         socket.write('HTTP/1.1 501 Table full\r\n\r\n');
         socket.destroy();
         logger.error('Max number players exceeded!');
@@ -303,7 +304,7 @@ function handle_register_player(userId: string, playerData: IPlayerDict) {
         } else {
             logger.warn(`client ${player.id} not ready`);
         }
-        if (table.isFull()) {
+        if (table.isFull(false)) {
             logger.info(`game ready to start`);
             connections.forEach((value: WebSocket, key: string) => {
                 if (value.readyState === WebSocket.OPEN) {
@@ -343,17 +344,20 @@ export function handle_player_schupfed(userId: string, cards: Map<string, any>[]
     const l = cards.length;
     logger.info(`Player ${userId} schupfed ${l} cards.`);
 
-    cards.forEach((seatCardName: any) => {
+    cards.forEach((seatCardNameXY: any) => {
         //logger.info(`seatCardName: ${seatCardName}`);
-        const cardName = seatCardName['card'] as string;
-        const seat = seatCardName['seat'] as number;
+        const cardName = seatCardNameXY['card'] as string;
         let cardModel = table.findCard(cardName);
         if (cardModel != null) {
             player?.removeCard(cardModel!);
+            const seat = seatCardNameXY['seat'] as number;
             const otherPlayer = table.getPlayerBySeat(seat);
             if (otherPlayer) {
                 logger.info("Moving card to player: %s at seat %d", otherPlayer.name, seat);
                 cardModel!.setOwner(otherPlayer);
+                const x = seatCardNameXY['x'] as number;
+                const y = seatCardNameXY['y'] as number;
+                cardModel!.setPosition(x, y);
                 otherPlayer.addCard(cardModel!);
                 cardModel!.is_visible = otherPlayer.phase == Phase.GAME_STATE_5_PLAY;
             }

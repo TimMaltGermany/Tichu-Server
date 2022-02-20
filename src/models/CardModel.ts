@@ -64,30 +64,11 @@ export default class CardModel {
         this.is_visible = false;
     }
 
-    /*
-    def init_from_dict(self, atts):
-        this.x = atts['x']
-    this.y = atts['y']
-    this.valid_x = atts['valid_x']
-    this.valid_y = atts['valid_y']
-    this.is_selected = atts['is_selected']
-    this.is_to_be_played = atts['is_to_be_played']
-    this._state = atts['_state']
-    this.set_owner(atts['_owner'])
-    this.is_visible = atts['is_visible']
+    setPosition(x: number, y: number) {
+        this.x = x;
+        this.y = y;
+    }
 
-    def set_position(self, coordinates, is_valid):
-        this.x = coordinates[0]
-    this.y = coordinates[1]
-    if is_valid:
-        this.valid_x = coordinates[0]
-    this.valid_y = coordinates[1]
-*/
-
-    /*
-    def get_position(self):
-    return this.x, this.y
-*/
     setOwner(owner: PlayerModel) {
         if (owner.id != this.owner) {
             CardModel.logger.debug("Moving card %s from player %s to %s.", this.name, this.owner, owner.id);

@@ -3,7 +3,7 @@ import PlayerModel, {Phase, PlayerStatus} from "../../models/PlayerModel";
 
 test('Table should be initially empty', () => {
     let tableModel = new TableModel();
-    expect(tableModel.isFull()).toBe(false);
+    expect(tableModel.isFull(true)).toBe(false);
 });
 
 test('Adding players to table - two proper teams', () => {
@@ -14,19 +14,19 @@ test('Adding players to table - two proper teams', () => {
     let p4t2 = new PlayerModel("id4", "name4", "team2", -1);
 
     expect(tableModel.playerJoins(p1t1)).toBe(true);
-    expect(tableModel.isFull()).toBe(false);
+    expect(tableModel.isFull(true)).toBe(false);
     expect(p1t1.seat).toBe(0);
 
     expect(tableModel.playerJoins(p3t1)).toBe(true);
-    expect(tableModel.isFull()).toBe(false);
+    expect(tableModel.isFull(true)).toBe(false);
     expect(p3t1.seat).toBe(2);
 
     expect(tableModel.playerJoins(p2t2)).toBe(true);
-    expect(tableModel.isFull()).toBe(false);
+    expect(tableModel.isFull(true)).toBe(false);
     expect(p2t2.seat).toBe(1);
 
     expect(tableModel.playerJoins(p4t2)).toBe(true);
-    expect(tableModel.isFull()).toBe(true);
+    expect(tableModel.isFull(true)).toBe(true);
     expect(p4t2.seat).toBe(3);
 
     expect(tableModel.playerJoins(p1t1)).toBe(true);
@@ -41,19 +41,19 @@ test('Adding players to table - two proper teams (different order)', () => {
     let p4t2 = new PlayerModel("id4", "name4", "team2", -1);
 
     expect(tableModel.playerJoins(p1t1)).toBe(true);
-    expect(tableModel.isFull()).toBe(false);
+    expect(tableModel.isFull(true)).toBe(false);
     expect(p1t1.seat).toBe(0);
 
     expect(tableModel.playerJoins(p2t2)).toBe(true);
-    expect(tableModel.isFull()).toBe(false);
+    expect(tableModel.isFull(true)).toBe(false);
     expect(p2t2.seat).toBe(1);
 
     expect(tableModel.playerJoins(p4t2)).toBe(true);
-    expect(tableModel.isFull()).toBe(false);
+    expect(tableModel.isFull(true)).toBe(false);
     expect(p4t2.seat).toBe(3);
 
     expect(tableModel.playerJoins(p3t1)).toBe(true);
-    expect(tableModel.isFull()).toBe(true);
+    expect(tableModel.isFull(true)).toBe(true);
     expect(p3t1.seat).toBe(2);
 
     expect(tableModel.playerJoins(p1t1)).toBe(true);
@@ -75,10 +75,33 @@ test('Adding players to table - disconnect, reconnect)', () => {
     let p1t1a = new PlayerModel("id1a", "name1", "team1", -1);
     expect(tableModel.playerJoins(p1t1a)).toBe(true);
 
-    expect(tableModel.isFull()).toBe(true);
-    expect(p1t1.seat).toBe(0);
+    expect(tableModel.isFull(true)).toBe(true);
+    expect(p1t1a.seat).toBe(0);
 
 });
+
+test('Adding players to table - disconnect, other player joins)', () => {
+    let tableModel = new TableModel();
+    let p1t1 = new PlayerModel("id1", "name1", "team1", -1);
+    let p3t1 = new PlayerModel("id3", "name3", "team1", -1);
+    let p2t2 = new PlayerModel("id2", "name2", "team2", -1);
+    let p4t2 = new PlayerModel("id4", "name4", "team2", -1);
+
+    expect(tableModel.playerJoins(p1t1)).toBe(true);
+    expect(tableModel.playerJoins(p2t2)).toBe(true);
+    expect(tableModel.playerJoins(p4t2)).toBe(true);
+    expect(tableModel.playerJoins(p3t1)).toBe(true);
+
+    tableModel.disablePlayer(p1t1.id);
+
+    let p1t1a = new PlayerModel("id1a", "some other player", "team1", -1);
+    expect(tableModel.playerJoins(p1t1a)).toBe(false);
+
+    expect(tableModel.isFull(false)).toBe(true);
+    expect(tableModel.isFull(true)).toBe(false);
+    expect(p1t1a.seat).toBe(-1);
+});
+
 
 test('Adding players to table - two proper teams (all want same team)', () => {
     let tableModel = new TableModel();
@@ -88,22 +111,22 @@ test('Adding players to table - two proper teams (all want same team)', () => {
     let p4t1 = new PlayerModel("id4", "name4", "team1", -1);
 
     expect(tableModel.playerJoins(p1t1)).toBe(true);
-    expect(tableModel.isFull()).toBe(false);
+    expect(tableModel.isFull(true)).toBe(false);
     expect(p1t1.seat).toBe(0);
     expect(p1t1.team).toBe('team1');
 
     expect(tableModel.playerJoins(p2t1)).toBe(true);
-    expect(tableModel.isFull()).toBe(false);
+    expect(tableModel.isFull(true)).toBe(false);
     expect(p2t1.seat).toBe(2);
     expect(p2t1.team).toBe('team1');
 
     expect(tableModel.playerJoins(p4t1)).toBe(true);
-    expect(tableModel.isFull()).toBe(false);
+    expect(tableModel.isFull(true)).toBe(false);
     expect(p4t1.seat).toBe(1);
     expect(p4t1.team).toBe('TEAM_DUMMY');
 
     expect(tableModel.playerJoins(p3t1)).toBe(true);
-    expect(tableModel.isFull()).toBe(true);
+    expect(tableModel.isFull(true)).toBe(true);
     expect(p3t1.seat).toBe(3);
     expect(p3t1.team).toBe('TEAM_DUMMY');
 
@@ -118,22 +141,22 @@ test('Adding players to table - two proper teams (three want same team)', () => 
     let p4t2 = new PlayerModel("id4", "name4", "team2", -1);
 
     expect(tableModel.playerJoins(p1t1)).toBe(true);
-    expect(tableModel.isFull()).toBe(false);
+    expect(tableModel.isFull(true)).toBe(false);
     expect(p1t1.seat).toBe(0);
     expect(p1t1.team).toBe('team1');
 
     expect(tableModel.playerJoins(p2t2)).toBe(true);
-    expect(tableModel.isFull()).toBe(false);
+    expect(tableModel.isFull(true)).toBe(false);
     expect(p2t2.seat).toBe(1);
     expect(p2t2.team).toBe('team2');
 
     expect(tableModel.playerJoins(p3t2)).toBe(true);
-    expect(tableModel.isFull()).toBe(false);
+    expect(tableModel.isFull(true)).toBe(false);
     expect(p3t2.seat).toBe(3);
     expect(p3t2.team).toBe('team2');
 
     expect(tableModel.playerJoins(p4t2)).toBe(true);
-    expect(tableModel.isFull()).toBe(true);
+    expect(tableModel.isFull(true)).toBe(true);
     expect(p4t2.seat).toBe(2);
     expect(p4t2.team).toBe('team1');
 
@@ -148,22 +171,22 @@ test('Adding players to table - two proper teams (three want same team 1)', () =
     let p4t2 = new PlayerModel("id4", "name4", "team2", -1);
 
     expect(tableModel.playerJoins(p1t1)).toBe(true);
-    expect(tableModel.isFull()).toBe(false);
+    expect(tableModel.isFull(true)).toBe(false);
     expect(p1t1.seat).toBe(0);
     expect(p1t1.team).toBe('team1');
 
     expect(tableModel.playerJoins(p2t1)).toBe(true);
-    expect(tableModel.isFull()).toBe(false);
+    expect(tableModel.isFull(true)).toBe(false);
     expect(p2t1.seat).toBe(2);
     expect(p2t1.team).toBe('team1');
 
     expect(tableModel.playerJoins(p3t1)).toBe(true);
-    expect(tableModel.isFull()).toBe(false);
+    expect(tableModel.isFull(true)).toBe(false);
     expect(p3t1.seat).toBe(1);
     expect(p3t1.team).toBe('TEAM_DUMMY');
 
     expect(tableModel.playerJoins(p4t2)).toBe(true);
-    expect(tableModel.isFull()).toBe(true);
+    expect(tableModel.isFull(true)).toBe(true);
     expect(p4t2.seat).toBe(3);
     expect(p4t2.team).toBe('TEAM_DUMMY');
 
@@ -179,21 +202,21 @@ test('Adding players to table - two proper teams (three want same team 1a)', () 
 
     expect(tableModel.playerJoins(p1t1)).toBe(true);
     expect(p1t1.seat).toBe(0);
-    expect(tableModel.isFull()).toBe(false);
+    expect(tableModel.isFull(true)).toBe(false);
     expect(p1t1.team).toBe('team1');
 
     expect(tableModel.playerJoins(p2t2)).toBe(true);
-    expect(tableModel.isFull()).toBe(false);
+    expect(tableModel.isFull(true)).toBe(false);
     expect(p2t2.seat).toBe(1);
     expect(p2t2.team).toBe('team2');
 
     expect(tableModel.playerJoins(p3t1)).toBe(true);
-    expect(tableModel.isFull()).toBe(false);
+    expect(tableModel.isFull(true)).toBe(false);
     expect(p3t1.seat).toBe(2);
     expect(p3t1.team).toBe('team1');
 
     expect(tableModel.playerJoins(p4t1)).toBe(true);
-    expect(tableModel.isFull()).toBe(true);
+    expect(tableModel.isFull(true)).toBe(true);
     expect(p4t1.seat).toBe(3);
     expect(p4t1.team).toBe('team2');
 

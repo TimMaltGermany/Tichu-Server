@@ -109,7 +109,7 @@ export default class PlayerModel {
     }
 
     removeCard(card: CardModel) {
-        this.cards = this.cards.filter((c) => c != card);
+        this.cards = this.cards.filter((c) => c.name != card.name);
     }
 
     showAllCards() {
